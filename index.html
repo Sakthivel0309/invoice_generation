@@ -13,9 +13,28 @@
             font-family: 'Roboto', sans-serif;
             line-height: 1.5;
         }
-        .container {
-            width: 800px;
-            margin: 0 auto;
+        .discount-input {
+            width: 80px;
+        }
+        .gst-input {
+            width: 60px;
+        }
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                padding: 0;
+                margin: 0;
+                background: white;
+            }
+            .container {
+                box-shadow: none;
+                border: none;
+                margin: 0;
+                padding: 0;
+                width: 100%;
+            }
         }
         .invoice-table {
             width: 100%;
@@ -28,36 +47,17 @@
         .text-nowrap {
             white-space: nowrap;
         }
-        @media print {
-            .no-print {
-                display: none !important;
-            }
-            body {
-                padding: 0;
-                margin: 0;
-                background: white;
-                font-size: 12px;
-            }
-            .container {
-                box-shadow: none;
-                border: none;
-                margin: 0;
-                padding: 10px;
-                width: 100%;
-            }
-        }
     </style>
 </head>
 <body class="bg-gray-50">
-    <div class="container bg-white shadow-md rounded-lg my-4 p-6" id="invoice-container">
-        <!-- Header Section -->
-        <div class="header border-b-2 border-blue-600 pb-4 mb-4">
+    <div class="container mx-auto p-4 max-w-4xl bg-white shadow-md rounded-lg my-8" id="invoice-container">
+        <!-- Header Section with Logo -->
+        <div class="header border-b-2 border-blue-600 pb-4 mb-4 text-center">
             <div class="flex justify-center mb-2">
-
-            <img src="logo.png" alt="TECHNOVAHUB Logo" class="h-24"></div>
-
-            <h1 class="text-2xl font-bold text-blue-600 text-center">INVOICE</h1>
-            <div class="mt-4 grid grid-cols-2 gap-4 text-sm">
+                <img src="logo.png" alt="TECHNOVAHUB Logo" class="h-20"> <!-- Reduced logo size -->
+            </div>
+            <h1 class="text-2xl font-bold text-blue-600 my-1">INVOICE</h1>
+            <div class="mt-2 grid grid-cols-2 gap-4 text-sm">
                 <div class="text-left">
                     <p class="text-gray-600">No.48, First Floor,</p>
                     <p class="text-gray-600">Lawspet Main Road, Puducherry - 605008</p>
@@ -73,16 +73,16 @@
         <div class="flex justify-between items-start mb-6">
             <div class="w-1/2">
                 <h3 class="text-lg font-semibold text-blue-600 mb-1">Invoice To</h3>
-                <div class="w-full border-b border-gray-300 px-2 py-1 mb-2" id="client-name-display">Aroun Systems and Safety Equipments</div>
+                <input type="text" id="client-name" class="w-full border-b border-gray-300 px-2 py-1 mb-2" value="Aroun Systems and Safety Equipments">
                 
-                <div class="mt-4">
+                <div class="mt-2">
                     <h4 class="font-semibold text-gray-700 mb-1">GSTIN</h4>
-                    <div class="w-full border-b border-gray-300 px-2 py-1" id="client-gst-display">34ADXPA0879K1Z3</div>
+                    <input type="text" id="client-gst" class="w-full border-b border-gray-300 px-2 py-1" value="34ADXPA0879K1Z3">
                 </div>
                 
-                <div class="mt-4">
+                <div class="mt-2">
                     <h4 class="font-semibold text-gray-700 mb-1">Address</h4>
-                    <div class="w-full border-b border-gray-300 px-2 py-1 min-h-[4rem]" id="client-address-display">38.39 2ND CROSS STREET GREEN GARDEN</div>
+                    <textarea id="client-address" class="w-full border-b border-gray-300 px-2 py-1 h-16">38.39 2ND CROSS STREET GREEN GARDEN</textarea>
                 </div>
             </div>
             
@@ -90,15 +90,15 @@
                 <table class="invoice-table">
                     <tr>
                         <td class="font-semibold">Invoice #</td>
-                        <td><div class="w-full text-right" id="invoice-number-display">INV-001</div></td>
+                        <td><input type="text" id="invoice-number" class="w-full border-none text-right" value="INV-001"></td>
                     </tr>
                     <tr>
                         <td class="font-semibold">Date</td>
-                        <td><div class="w-full text-right" id="invoice-date-display">2025-07-16</div></td>
+                        <td><input type="date" id="invoice-date" class="w-full border-none text-right"></td>
                     </tr>
                     <tr>
                         <td class="font-semibold">Due Date</td>
-                        <td><div class="w-full text-right" id="due-date-display">2025-07-31</div></td>
+                        <td><input type="date" id="due-date" class="w-full border-none text-right"></td>
                     </tr>
                 </table>
             </div>
@@ -114,6 +114,7 @@
                         <th class="text-center">Qty</th>
                         <th class="text-right">Price/Unit</th>
                         <th class="text-right">Discount</th>
+                        <th class="text-right">GST %</th>
                         <th class="text-right">Amount</th>
                         <th class="no-print">Action</th>
                     </tr>
@@ -137,6 +138,7 @@
                     <span class="font-semibold">Discount</span>
                     <span id="total-discount" class="text-nowrap">₹0.00</span>
                 </div>
+                
                 <div class="flex justify-between py-2 border-b border-blue-600">
                     <span class="font-semibold text-blue-600">Total</span>
                     <span id="total" class="font-semibold text-blue-600 text-nowrap">₹0.00</span>
@@ -147,22 +149,15 @@
             </div>
         </div>
 
-        <!-- Terms and Conditions -->
-        <div class="terms mt-4 pt-3 border-t-2 border-blue-600">
-            <h4 class="text-md font-semibold text-blue-600 mb-1">Terms and Conditions</h4>
-            <p class="text-gray-700 text-sm">1. This is a computer generated invoice.</p>
-            <p class="text-gray-700 text-sm">2. Please pay within 15 days from the invoice date.</p>
-        </div>
-
         <!-- Footer -->
         <div class="footer mt-6 pt-4 border-t-2 border-blue-600">
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <h3 class="text-md font-semibold text-blue-600 mb-1">Bank Details</h3>
-                    <p class="text-gray-600 text-sm">Bank Name: HDFC BANK, VENKATA NAGAR, PONDICHERRY</p>
-                    <p class="text-gray-600 text-sm">Account No.: 50100297512837</p>
-                    <p class="text-gray-600 text-sm">IFSC Code: HDFC0001278</p>
-                    <p class="text-gray-600 text-sm">Account Name: VIDHYAVATHI</p>
+                    <p class="text-gray-600 text-sm">Bank Name: STATE BANK OF INDIA, VILLIYANUR</p>
+                    <p class="text-gray-600 text-sm">Account No.: 41331089375</p>
+                    <p class="text-gray-600 text-sm">IFSC Code: SBIN0016854</p>
+                    <p class="text-gray-600 text-sm">Account Name: TECHNOVAHUB</p>
                 </div>
                 <div class="text-right">
                     <h3 class="text-md font-semibold text-blue-600 mb-1">For TECHNOVAHUB</h3>
@@ -187,21 +182,19 @@
 
         // Set today's date as default for invoice and due date (due date +15 days)
         const today = new Date();
-        const formattedDate = today.toISOString().split('T')[0];
-        document.getElementById('invoice-date-display').textContent = formattedDate;
+        document.getElementById('invoice-date').valueAsDate = today;
         
         const dueDate = new Date();
         dueDate.setDate(today.getDate() + 15);
-        const formattedDueDate = dueDate.toISOString().split('T')[0];
-        document.getElementById('due-date-display').textContent = formattedDueDate;
+        document.getElementById('due-date').valueAsDate = dueDate;
 
         // Sample data
         const sampleItems = [
-            { description: "Server (Per Year)", hsn: "", qty: 1, price: 3500, discount: 0, amount: 3500 },
-            { description: "SSL Certificate", hsn: "", qty: 1, price: 750, discount: 0, amount: 750 },
-            { description: "Responsive Design", hsn: "", qty: 1, price: 20000, discount: 8000, amount: 12000 },
-            { description: "Cross-Device Compatibility", hsn: "", qty: 1, price: 15000, discount: 6000, amount: 9000 },
-            { description: "Admin Panel Development", hsn: "", qty: 1, price: 1000, discount: 0, amount: 1000 }
+            { description: "Server (Per Year)", hsn: "", qty: 1, price: 3500, discount: 0, gst: 18, amount: 4130 },
+            { description: "SSL Certificate", hsn: "", qty: 1, price: 750, discount: 0, gst: 18, amount: 885 },
+            { description: "Responsive Design", hsn: "", qty: 1, price: 20000, discount: 8000, gst: 18, amount: 14160 },
+            { description: "Cross-Device Compatibility", hsn: "", qty: 1, price: 15000, discount: 6000, gst: 18, amount: 10620 },
+            { description: "Admin Panel Development", hsn: "", qty: 1, price: 1000, discount: 0, gst: 18, amount: 1180 }
         ];
 
         // Add sample data on load
@@ -223,21 +216,47 @@
             tr.className = 'border-b hover:bg-gray-50';
             
             tr.innerHTML = `
-                <td class="p-2"><div class="item-desc">${data ? data.description : ''}</div></td>
-                <td class="p-2"><div class="item-hsn">${data ? data.hsn : ''}</div></td>
-                <td class="p-2 text-center"><div class="item-qty">${data ? data.qty : 1}</div></td>
-                <td class="p-2 text-right"><div class="item-price">${data ? data.price.toFixed(2) : '0.00'}</div></td>
-                <td class="p-2 text-right"><div class="item-discount">${data ? data.discount.toFixed(2) : '0.00'}</div></td>
-                <td class="p-2 text-right item-amount">₹${data ? data.amount.toFixed(2) : '0.00'}</td>
+                <td class="p-2"><input type="text" class="w-full border-none item-desc" value="${data ? data.description : ''}"></td>
+                <td class="p-2"><input type="text" class="w-full border-none item-hsn" value="${data ? data.hsn : ''}"></td>
+                <td class="p-2"><input type="number" class="w-full border-none text-center item-qty" value="${data ? data.qty : 1}" min="1"></td>
+                <td class="p-2"><input type="number" class="w-full border-none text-right item-price" value="${data ? data.price : 0}" min="0" step="0.01"></td>
+                <td class="p-2"><input type="number" class="w-full border-none text-right item-discount" value="${data ? data.discount : 0}" min="0" step="0.01"></td>
+                <td class="p-2"><input type="number" class="w-full border-none text-right item-gst" value="${data ? data.gst : 18}" min="0" max="100" step="0.01"></td>
+                <td class="p-2 text-right item-amount">₹0.00</td>
                 <td class="p-2 text-center no-print"><button class="text-red-500 delete-row">×</button></td>
             `;
             
             tbody.appendChild(tr);
             
+            // Add event listeners to new row
+            const inputs = tr.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.addEventListener('input', calculateRow);
+                input.addEventListener('change', calculateTotals);
+            });
+            
             tr.querySelector('.delete-row').addEventListener('click', function() {
                 tr.remove();
                 calculateTotals();
             });
+            
+            calculateRow.call(tr);
+        }
+
+        // Calculate row total
+        function calculateRow() {
+            const tr = this.closest('tr') || this;
+            const qty = parseFloat(tr.querySelector('.item-qty').value) || 0;
+            const price = parseFloat(tr.querySelector('.item-price').value) || 0;
+            const discount = parseFloat(tr.querySelector('.item-discount').value) || 0;
+            const gst = parseFloat(tr.querySelector('.item-gst').value) || 0;
+            
+            const subtotal = qty * price;
+            const taxable = subtotal - discount;
+            const tax = taxable * (gst / 100);
+            const total = taxable + tax;
+            
+            tr.querySelector('.item-amount').textContent = '₹' + total.toFixed(2);
         }
 
         // Calculate all totals
@@ -245,23 +264,31 @@
             const rows = document.querySelectorAll('#items-table tbody tr');
             let subTotal = 0;
             let totalDiscount = 0;
-            let total = 0;
+            let totalTaxable = 0;
             
             rows.forEach(row => {
-                const qty = parseFloat(row.querySelector('.item-qty').textContent) || 0;
-                const price = parseFloat(row.querySelector('.item-price').textContent) || 0;
-                const discount = parseFloat(row.querySelector('.item-discount').textContent) || 0;
+                calculateRow.call(row);
+                
+                const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+                const price = parseFloat(row.querySelector('.item-price').value) || 0;
+                const discount = parseFloat(row.querySelector('.item-discount').value) || 0;
+                const gst = parseFloat(row.querySelector('.item-gst').value) || 0;
                 
                 const rowSubtotal = qty * price;
-                const rowTotal = rowSubtotal - discount;
+                const rowTaxable = rowSubtotal - discount;
+                const rowTax = rowTaxable * (gst / 100);
                 
                 subTotal += rowSubtotal;
                 totalDiscount += discount;
-                total += rowTotal;
+                totalTaxable += rowTaxable;
             });
+            
+             
+            const total = totalTaxable;
             
             document.getElementById('sub-total').textContent = '₹' + subTotal.toFixed(2);
             document.getElementById('total-discount').textContent = '₹' + totalDiscount.toFixed(2);
+             
             document.getElementById('total').textContent = '₹' + total.toFixed(2);
             
             document.getElementById('amount-in-words').textContent = numberToWords(total) + ' Rupees Only';
@@ -316,7 +343,7 @@
             return words.trim();
         }
 
-        // Generate PDF with fixed content overriding issue
+        // Generate PDF with improved formatting
         document.getElementById('generate-pdf').addEventListener('click', function() {
             const element = document.getElementById('invoice-container');
             const buttons = document.querySelectorAll('.no-print');
@@ -324,47 +351,29 @@
             // Hide buttons before capturing
             buttons.forEach(btn => btn.style.display = 'none');
             
-            // Set options for html2canvas
+            // Set a fixed width for PDF generation
             const opt = {
                 scale: 2,
                 logging: false,
                 useCORS: true,
                 allowTaint: true,
-                letterRendering: true,
-                width: element.offsetWidth,
-                windowWidth: element.scrollWidth,
-                height: element.scrollHeight
+                width: 800,
+                windowWidth: 800
             };
             
-            // Create a promise to ensure all fonts are loaded
-            const fontLoadPromise = document.fonts ? document.fonts.ready : Promise.resolve();
-            
-            fontLoadPromise.then(() => {
-                return html2canvas(element, opt);
-            }).then(canvas => {
+            html2canvas(element, opt).then(canvas => {
                 // Show buttons again
                 buttons.forEach(btn => btn.style.display = '');
                 
                 const imgData = canvas.toDataURL('image/png');
-                const pdf = new jsPDF({
-                    orientation: 'portrait',
-                    unit: 'mm',
-                    format: 'a4'
-                });
-                
-                // Calculate image dimensions to fit A4
+                const pdf = new jsPDF('p', 'mm', 'a4');
                 const imgWidth = 210; // A4 width in mm
-                const pageHeight = 297; // A4 height in mm
-                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                const imgHeight = canvas.height * imgWidth / canvas.width;
                 
-                // Add first page
                 pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
                 
-                const invoiceNumber = document.getElementById('invoice-number-display').textContent || 'invoice';
+                const invoiceNumber = document.getElementById('invoice-number').value || 'invoice';
                 pdf.save(`${invoiceNumber}.pdf`);
-            }).catch(error => {
-                console.error('Error generating PDF:', error);
-                buttons.forEach(btn => btn.style.display = '');
             });
         });
     </script>
