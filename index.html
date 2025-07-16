@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice Generator</title>
+    <title>TECHNOVAHUB - Invoice Generator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -11,168 +11,196 @@
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
         body {
             font-family: 'Roboto', sans-serif;
-            line-height: 1.5;
         }
-        .discount-input {
-            width: 80px;
-        }
-        .gst-input {
-            width: 60px;
+        .invoice-container {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
         }
         @media print {
+            body {
+                background: white;
+                margin: 0;
+                padding: 0;
+            }
+            .invoice-container {
+                box-shadow: none;
+                margin: 0;
+                width: 100%;
+            }
             .no-print {
                 display: none !important;
             }
-            body {
-                padding: 0;
-                margin: 0;
-                background: white;
-            }
-            .container {
-                box-shadow: none;
-                border: none;
-                margin: 0;
-                padding: 0;
-                width: 100%;
-            }
         }
-        .invoice-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .invoice-table th, .invoice-table td {
-            padding: 8px;
-            border: 1px solid #e2e8f0;
-        }
-        .text-nowrap {
-            white-space: nowrap;
+        .page-break {
+            page-break-after: always;
         }
     </style>
 </head>
-<body class="bg-gray-50">
-    <div class="container mx-auto p-4 max-w-4xl bg-white shadow-md rounded-lg my-8" id="invoice-container">
-        <!-- Header Section with Logo -->
-        <div class="header border-b-2 border-blue-600 pb-4 mb-4 text-center">
-            <div class="flex justify-center mb-2">
-                <img src="logo.png" alt="TECHNOVAHUB Logo" class="h-20"> <!-- Reduced logo size -->
-            </div>
-            <h1 class="text-2xl font-bold text-blue-600 my-1">INVOICE</h1>
-            <div class="mt-2 grid grid-cols-2 gap-4 text-sm">
-                <div class="text-left">
-                    <p class="text-gray-600">No.48, First Floor,</p>
-                    <p class="text-gray-600">Lawspet Main Road, Puducherry - 605008</p>
+<body class="bg-gray-100 p-4">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white p-6 rounded-lg shadow-md mb-4 no-print">
+            <h1 class="text-2xl font-bold text-blue-700 mb-4">Invoice Generator</h1>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Client Name</label>
+                    <input type="text" id="client-name" class="mt-1 block w-full border border-gray-300 rounded-md p-2">
                 </div>
-                <div class="text-right">
-                    <p class="text-gray-600">Phone: 9360962810 | Email: technovahubcareer@gmail.com</p>
-                    <p class="text-gray-600">GSTIN: 34ADXPA0879K1Z3 | State: 34-Puducherry</p>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Client GSTIN</label>
+                    <input type="text" id="client-gst" class="mt-1 block w-full border border-gray-300 rounded-md p-2">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700">Client Address</label>
+                    <textarea id="client-address" rows="2" class="mt-1 block w-full border border-gray-300 rounded-md p-2"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Invoice Number</label>
+                    <input type="text" id="invoice-number" class="mt-1 block w-full border border-gray-300 rounded-md p-2" value="INV-001">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Invoice Date</label>
+                    <input type="date" id="invoice-date" class="mt-1 block w-full border border-gray-300 rounded-md p-2">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Due Date</label>
+                    <input type="date" id="due-date" class="mt-1 block w-full border border-gray-300 rounded-md p-2">
                 </div>
             </div>
+            <button id="update-invoice" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Update Invoice</button>
         </div>
 
-        <!-- Invoice Info - Compact Layout -->
-        <div class="flex justify-between items-start mb-6">
-            <div class="w-1/2">
-                <h3 class="text-lg font-semibold text-blue-600 mb-1">Invoice To</h3>
-                <input type="text" id="client-name" class="w-full border-b border-gray-300 px-2 py-1 mb-2" value="Aroun Systems and Safety Equipments">
-                
-                <div class="mt-2">
-                    <h4 class="font-semibold text-gray-700 mb-1">GSTIN</h4>
-                    <input type="text" id="client-gst" class="w-full border-b border-gray-300 px-2 py-1" value="34ADXPA0879K1Z3">
+        <div class="invoice-container p-8" id="invoice">
+            <!-- Company Header -->
+            <div class="text-center mb-6">
+                <div class="flex justify-center mb-2">
+                    <img src="logo.png" alt="TECHNOVAHUB Logo" class="h-24">
                 </div>
-                
-                <div class="mt-2">
-                    <h4 class="font-semibold text-gray-700 mb-1">Address</h4>
-                    <textarea id="client-address" class="w-full border-b border-gray-300 px-2 py-1 h-16">38.39 2ND CROSS STREET GREEN GARDEN</textarea>
-                </div>
+        
+                <p class="text-sm text-gray-600">No.48, Lawspet Main Road, Pondicherry-6005008/p>
+                <p class="text-sm text-gray-600">Phone no.: 9360962810 | Email: technovahubcareer@gmail.com</p>
+                <p class="text-sm text-gray-600">GSTIN: 34ADXPA0879K1Z3 | State: 34-Puducherry</p>
             </div>
-            
-            <div class="w-1/2 pl-4">
-                <table class="invoice-table">
-                    <tr>
-                        <td class="font-semibold">Invoice #</td>
-                        <td><input type="text" id="invoice-number" class="w-full border-none text-right" value="INV-001"></td>
-                    </tr>
-                    <tr>
-                        <td class="font-semibold">Date</td>
-                        <td><input type="date" id="invoice-date" class="w-full border-none text-right"></td>
-                    </tr>
-                    <tr>
-                        <td class="font-semibold">Due Date</td>
-                        <td><input type="date" id="due-date" class="w-full border-none text-right"></td>
-                    </tr>
-                </table>
-            </div>
-        </div>
 
-        <!-- Items Table -->
-        <div class="overflow-x-auto">
-            <table class="invoice-table" id="items-table">
+            <!-- Invoice Title -->
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-blue-700 border-b-2 border-blue-200 pb-2 inline-block px-8">INVOICE</h2>
+            </div>
+
+            <!-- Invoice Info -->
+            <div class="flex justify-between mb-8">
+                <div class="w-1/2">
+                    <h3 class="text-lg font-semibold text-blue-700 mb-2">Invoice To:</h3>
+                    <p id="display-client-name" class="font-medium">Aroun Systems and Safety Equipments</p>
+                    <p id="display-client-gst" class="text-sm">GSTIN: 34ADXPA0879K123</p>
+                    <p id="display-client-address" class="text-sm mt-1">38.39 2ND CROSS STREET GREEN GARDEN</p>
+                </div>
+                <div class="w-1/2">
+                    <table class="w-full border border-gray-200">
+                        <tr>
+                            <td class="p-2 border border-gray-200 font-semibold">Invoice #</td>
+                            <td class="p-2 border border-gray-200 text-right" id="display-invoice-number">INV-001</td>
+                        </tr>
+                        <tr>
+                            <td class="p-2 border border-gray-200 font-semibold">Date</td>
+                            <td class="p-2 border border-gray-200 text-right" id="display-invoice-date"></td>
+                        </tr>
+                        <tr>
+                            <td class="p-2 border border-gray-200 font-semibold">Due Date</td>
+                            <td class="p-2 border border-gray-200 text-right" id="display-due-date"></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Items Table -->
+            <table class="w-full border border-gray-200 mb-4" id="items-table">
                 <thead>
                     <tr class="bg-blue-600 text-white">
-                        <th class="text-left">Item Description</th>
-                        <th class="text-left">HSN/SAC</th>
-                        <th class="text-center">Qty</th>
-                        <th class="text-right">Price/Unit</th>
-                        <th class="text-right">Discount</th>
-                        <th class="text-right">GST %</th>
-                        <th class="text-right">Amount</th>
-                        <th class="no-print">Action</th>
+                        <th class="p-2 border border-gray-200 text-left">Item Description</th>
+                        <th class="p-2 border border-gray-200 text-center">Qty</th>
+                        <th class="p-2 border border-gray-200 text-right">Price/Unit</th>
+                        <th class="p-2 border border-gray-200 text-right">Discount</th>
+                        <th class="p-2 border border-gray-200 text-right">GST (18%)</th>
+                        <th class="p-2 border border-gray-200 text-right">Amount</th>
+                        <th class="p-2 border border-gray-200 no-print">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Rows will be added here -->
+                    <!-- Items will be added here -->
                 </tbody>
             </table>
-        </div>
 
-        <button id="add-row" class="mt-2 bg-blue-600 text-white px-4 py-2 rounded no-print">Add Item</button>
-
-        <!-- Totals Section -->
-        <div class="totals-section mt-6 flex justify-end">
-            <div class="w-64">
-                <div class="flex justify-between py-2 border-b">
-                    <span class="font-semibold">Sub Total</span>
-                    <span id="sub-total" class="text-nowrap">₹0.00</span>
-                </div>
-                <div class="flex justify-between py-2 border-b">
-                    <span class="font-semibold">Discount</span>
-                    <span id="total-discount" class="text-nowrap">₹0.00</span>
-                </div>
-                
-                <div class="flex justify-between py-2 border-b border-blue-600">
-                    <span class="font-semibold text-blue-600">Total</span>
-                    <span id="total" class="font-semibold text-blue-600 text-nowrap">₹0.00</span>
-                </div>
-                <div class="mt-2 text-right text-sm text-blue-600">
-                    <span id="amount-in-words">Zero Rupees Only</span>
-                </div>
+            <div class="no-print mb-4">
+                <button id="add-item" class="bg-blue-600 text-white px-3 py-1 rounded text-sm">Add Item</button>
             </div>
-        </div>
 
-        <!-- Footer -->
-        <div class="footer mt-6 pt-4 border-t-2 border-blue-600">
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <h3 class="text-md font-semibold text-blue-600 mb-1">Bank Details</h3>
-                    <p class="text-gray-600 text-sm">Bank Name: STATE BANK OF INDIA, VILLIYANUR</p>
-                    <p class="text-gray-600 text-sm">Account No.: 41331089375</p>
-                    <p class="text-gray-600 text-sm">IFSC Code: SBIN0016854</p>
-                    <p class="text-gray-600 text-sm">Account Name: TECHNOVAHUB</p>
-                </div>
-                <div class="text-right">
-                    <h3 class="text-md font-semibold text-blue-600 mb-1">For TECHNOVAHUB</h3>
-                    <div class="mt-6">
-                        <p class="text-gray-600 text-sm">Authorized Signatory</p>
+            <!-- Totals Section -->
+            <div class="flex justify-end">
+                <div class="w-64">
+                    <div class="flex justify-between py-1 border-b border-gray-200">
+                        <span class="font-semibold">Sub Total</span>
+                        <span id="sub-total">₹0.00</span>
+                    </div>
+                    <div class="flex justify-between py-1 border-b border-gray-200">
+                        <span class="font-semibold">Discount</span>
+                        <span id="total-discount">₹0.00</span>
+                    </div>
+                    <div class="flex justify-between py-1 border-b-2 border-blue-600 font-semibold">
+                        <span>Total</span>
+                        <span id="total">₹0.00</span>
+                    </div>
+                    <div class="flex justify-between py-1">
+                        <span class="font-semibold">You Saved</span>
+                        <span id="you-saved">₹0.00</span>
                     </div>
                 </div>
             </div>
+
+            <!-- Amount in Words -->
+            <div class="mt-4 p-2 bg-blue-50 rounded">
+                <p class="text-sm font-semibold">Amount in Words:</p>
+                <p id="amount-in-words" class="text-sm italic">Zero Rupees Only</p>
+            </div>
+
+            <!-- Terms and Conditions -->
+            <div class="mt-6">
+                <h3 class="text-lg font-semibold text-blue-700 mb-2">Terms and Conditions</h3>
+                <ul class="list-disc pl-5 text-sm">
+                    <li>This is a computer generated invoice</li>
+                    <li>Thanks for doing business with us!</li>
+                </ul>
+            </div>
+
+            <!-- Bank Details -->
+            <div class="mt-8 pt-4 border-t border-blue-200">
+                <h3 class="text-lg font-semibold text-blue-700 mb-2">Bank Details</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <p><span class="font-semibold">Bank Name:</span> HDFC BANK, VENKATESWARA NAGAR, PONDICHERRY</p>
+                        <p><span class="font-semibold">Account No.:</span> 50100297512837</p>
+                    </div>
+                    <div>
+                        <p><span class="font-semibold">IFSC Code:</span> HDFC0001278</p>
+                        <p><span class="font-semibold">Account Name:</span> VIDHYAVATHI </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="mt-12 text-center">
+                <p class="text-sm text-gray-600">For TECHNOVAHUB</p>
+                <div class="mt-8">
+                    <p class="text-sm font-semibold">Authorized Signatory</p>
+                </div>
+            </div>
         </div>
 
-        <!-- Download Button -->
-        <div class="mt-6 text-center no-print">
-            <button id="generate-pdf" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow text-sm">
-                Download as PDF
-            </button>
+        <div class="mt-4 text-center no-print">
+            <button id="download-pdf" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700">Download PDF</button>
+            <button id="print-invoice" class="ml-4 bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700">Print Invoice</button>
         </div>
     </div>
 
@@ -181,82 +209,135 @@
         const { jsPDF } = window.jspdf;
 
         // Set today's date as default for invoice and due date (due date +15 days)
-        const today = new Date();
-        document.getElementById('invoice-date').valueAsDate = today;
-        
-        const dueDate = new Date();
-        dueDate.setDate(today.getDate() + 15);
-        document.getElementById('due-date').valueAsDate = dueDate;
-
-        // Sample data
-        const sampleItems = [
-            { description: "Server (Per Year)", hsn: "", qty: 1, price: 3500, discount: 0, gst: 18, amount: 4130 },
-            { description: "SSL Certificate", hsn: "", qty: 1, price: 750, discount: 0, gst: 18, amount: 885 },
-            { description: "Responsive Design", hsn: "", qty: 1, price: 20000, discount: 8000, gst: 18, amount: 14160 },
-            { description: "Cross-Device Compatibility", hsn: "", qty: 1, price: 15000, discount: 6000, gst: 18, amount: 10620 },
-            { description: "Admin Panel Development", hsn: "", qty: 1, price: 1000, discount: 0, gst: 18, amount: 1180 }
-        ];
-
-        // Add sample data on load
         document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            const formattedDate = today.toISOString().split('T')[0];
+            document.getElementById('invoice-date').value = formattedDate;
+            document.getElementById('display-invoice-date').textContent = formatDate(today);
+            
+            const dueDate = new Date();
+            dueDate.setDate(today.getDate() + 15);
+            const formattedDueDate = dueDate.toISOString().split('T')[0];
+            document.getElementById('due-date').value = formattedDueDate;
+            document.getElementById('display-due-date').textContent = formatDate(dueDate);
+
+            // Add sample items
+            const sampleItems = [
+                { description: "Server (Per Year)", qty: 1, price: 3500, discount: 0, discountPercent: 0 },
+                { description: "SSL Certificate", qty: 1, price: 750, discount: 0, discountPercent: 0 },
+                { description: "Responsive Design (Bootstrap)", qty: 1, price: 20000, discount: 8000, discountPercent: 40 },
+                { description: "Compatible with all devices",  qty: 1, price: 15000, discount: 6000, discountPercent: 40 },
+                { description: "Admin Panel - Fully Dynamic", qty: 1, price: 1000, discount: 0, discountPercent: 0 }
+            ];
+
             sampleItems.forEach(item => {
-                addRow(item);
+                addItemRow(item);
             });
             calculateTotals();
         });
 
-        // Add new row
-        document.getElementById('add-row').addEventListener('click', function() {
-            addRow();
+        // Format date to DD-MM-YYYY
+        function formatDate(date) {
+            const d = new Date(date);
+            let month = '' + (d.getMonth() + 1);
+            let day = '' + d.getDate();
+            const year = d.getFullYear();
+
+            if (month.length < 2) 
+                month = '0' + month;
+            if (day.length < 2) 
+                day = '0' + day;
+
+            return [day, month, year].join('-');
+        }
+
+        // Update invoice details
+        document.getElementById('update-invoice').addEventListener('click', function() {
+            document.getElementById('display-client-name').textContent = document.getElementById('client-name').value || 'Aroun Systems and Safety Equipments';
+            document.getElementById('display-client-gst').textContent = 'GSTIN: ' + (document.getElementById('client-gst').value || '34ADXPA0879K123');
+            document.getElementById('display-client-address').textContent = document.getElementById('client-address').value || '38.39 2ND CROSS STREET GREEN GARDEN';
+            document.getElementById('display-invoice-number').textContent = document.getElementById('invoice-number').value || 'INV-001';
+            
+            const invoiceDate = document.getElementById('invoice-date').value;
+            if (invoiceDate) {
+                document.getElementById('display-invoice-date').textContent = formatDate(new Date(invoiceDate));
+            }
+            
+            const dueDate = document.getElementById('due-date').value;
+            if (dueDate) {
+                document.getElementById('display-due-date').textContent = formatDate(new Date(dueDate));
+            }
         });
 
-        function addRow(data = null) {
+        // Add new item row
+        document.getElementById('add-item').addEventListener('click', function() {
+            addItemRow();
+        });
+
+        function addItemRow(data = null) {
             const tbody = document.querySelector('#items-table tbody');
             const tr = document.createElement('tr');
-            tr.className = 'border-b hover:bg-gray-50';
+            tr.className = 'border border-gray-200 hover:bg-gray-50';
             
             tr.innerHTML = `
-                <td class="p-2"><input type="text" class="w-full border-none item-desc" value="${data ? data.description : ''}"></td>
-                <td class="p-2"><input type="text" class="w-full border-none item-hsn" value="${data ? data.hsn : ''}"></td>
-                <td class="p-2"><input type="number" class="w-full border-none text-center item-qty" value="${data ? data.qty : 1}" min="1"></td>
-                <td class="p-2"><input type="number" class="w-full border-none text-right item-price" value="${data ? data.price : 0}" min="0" step="0.01"></td>
-                <td class="p-2"><input type="number" class="w-full border-none text-right item-discount" value="${data ? data.discount : 0}" min="0" step="0.01"></td>
-                <td class="p-2"><input type="number" class="w-full border-none text-right item-gst" value="${data ? data.gst : 18}" min="0" max="100" step="0.01"></td>
-                <td class="p-2 text-right item-amount">₹0.00</td>
-                <td class="p-2 text-center no-print"><button class="text-red-500 delete-row">×</button></td>
+                <td class="p-2 border border-gray-200"><input type="text" class="item-desc w-full border-none bg-transparent" value="${data ? data.description : ''}"></td>
+                <td class="p-2 border border-gray-200"><input type="text" class="item-hsn w-full border-none bg-transparent text-center" value="${data ? data.hsn : ''}"></td>
+                <td class="p-2 border border-gray-200"><input type="number" class="item-qty w-full border-none bg-transparent text-center" value="${data ? data.qty : 1}" min="1"></td>
+                <td class="p-2 border border-gray-200"><input type="number" class="item-price w-full border-none bg-transparent text-right" value="${data ? data.price.toFixed(2) : '0.00'}" min="0" step="0.01"></td>
+                <td class="p-2 border border-gray-200">
+                    <div class="flex items-center justify-end">
+                        <input type="number" class="item-discount-amt w-16 border-none bg-transparent text-right" value="${data ? data.discount.toFixed(2) : '0.00'}" min="0" step="0.01">
+                        <span class="text-xs ml-1">(${data ? data.discountPercent : 0}%)</span>
+                    </div>
+                </td>
+                <td class="p-2 border border-gray-200 text-right item-gst">₹0.00</td>
+                <td class="p-2 border border-gray-200 text-right item-amount">₹0.00</td>
+                <td class="p-2 border border-gray-200 text-center no-print"><button class="text-red-500 delete-item">×</button></td>
             `;
             
             tbody.appendChild(tr);
             
-            // Add event listeners to new row
-            const inputs = tr.querySelectorAll('input');
-            inputs.forEach(input => {
-                input.addEventListener('input', calculateRow);
-                input.addEventListener('change', calculateTotals);
+            // Add event listeners for calculations
+            const qtyInput = tr.querySelector('.item-qty');
+            const priceInput = tr.querySelector('.item-price');
+            const discountInput = tr.querySelector('.item-discount-amt');
+            
+            [qtyInput, priceInput, discountInput].forEach(input => {
+                input.addEventListener('input', function() {
+                    calculateRow(tr);
+                    calculateTotals();
+                });
             });
             
-            tr.querySelector('.delete-row').addEventListener('click', function() {
+            tr.querySelector('.delete-item').addEventListener('click', function() {
                 tr.remove();
                 calculateTotals();
             });
             
-            calculateRow.call(tr);
+            // Calculate initial row if data provided
+            if (data) {
+                calculateRow(tr);
+            }
         }
 
-        // Calculate row total
-        function calculateRow() {
-            const tr = this.closest('tr') || this;
-            const qty = parseFloat(tr.querySelector('.item-qty').value) || 0;
-            const price = parseFloat(tr.querySelector('.item-price').value) || 0;
-            const discount = parseFloat(tr.querySelector('.item-discount').value) || 0;
-            const gst = parseFloat(tr.querySelector('.item-gst').value) || 0;
+        // Calculate row totals
+        function calculateRow(row) {
+            const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+            const price = parseFloat(row.querySelector('.item-price').value) || 0;
+            const discount = parseFloat(row.querySelector('.item-discount-amt').value) || 0;
             
             const subtotal = qty * price;
             const taxable = subtotal - discount;
-            const tax = taxable * (gst / 100);
-            const total = taxable + tax;
+            const gst = taxable * 0.0;
+            const amount = taxable;
             
-            tr.querySelector('.item-amount').textContent = '₹' + total.toFixed(2);
+            // Update discount percentage
+            const discountPercent = subtotal > 0 ? Math.round((discount / subtotal) * 100) : 0;
+            row.querySelector('.item-discount-amt + span').textContent = `(${discountPercent}%)`;
+            
+            // Update displayed values
+            
+            row.querySelector('.item-amount').textContent = '₹' + amount.toFixed(2);
         }
 
         // Calculate all totals
@@ -264,33 +345,33 @@
             const rows = document.querySelectorAll('#items-table tbody tr');
             let subTotal = 0;
             let totalDiscount = 0;
-            let totalTaxable = 0;
+            let totalGst = 0;
+            let total = 0;
             
             rows.forEach(row => {
-                calculateRow.call(row);
-                
                 const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
                 const price = parseFloat(row.querySelector('.item-price').value) || 0;
-                const discount = parseFloat(row.querySelector('.item-discount').value) || 0;
-                const gst = parseFloat(row.querySelector('.item-gst').value) || 0;
+                const discount = parseFloat(row.querySelector('.item-discount-amt').value) || 0;
                 
                 const rowSubtotal = qty * price;
-                const rowTaxable = rowSubtotal - discount;
-                const rowTax = rowTaxable * (gst / 100);
+                const taxable = rowSubtotal - discount;
+                const rowGst = taxable * 0.0;
+                const rowTotal = taxable;
                 
                 subTotal += rowSubtotal;
                 totalDiscount += discount;
-                totalTaxable += rowTaxable;
+                totalGst += rowGst;
+                total += rowTotal;
             });
             
-             
-            const total = totalTaxable;
-            
+            // Update totals display
             document.getElementById('sub-total').textContent = '₹' + subTotal.toFixed(2);
             document.getElementById('total-discount').textContent = '₹' + totalDiscount.toFixed(2);
-             
-            document.getElementById('total').textContent = '₹' + total.toFixed(2);
             
+            document.getElementById('total').textContent = '₹' + total.toFixed(2);
+            document.getElementById('you-saved').textContent = '₹' + (subTotal - total + totalGst).toFixed(2);
+            
+            // Update amount in words
             document.getElementById('amount-in-words').textContent = numberToWords(total) + ' Rupees Only';
         }
 
@@ -343,37 +424,60 @@
             return words.trim();
         }
 
-        // Generate PDF with improved formatting
-        document.getElementById('generate-pdf').addEventListener('click', function() {
-            const element = document.getElementById('invoice-container');
+        // Print invoice
+        document.getElementById('print-invoice').addEventListener('click', function() {
+            window.print();
+        });
+
+        // Download as PDF
+        document.getElementById('download-pdf').addEventListener('click', function() {
+            const element = document.getElementById('invoice');
             const buttons = document.querySelectorAll('.no-print');
             
             // Hide buttons before capturing
             buttons.forEach(btn => btn.style.display = 'none');
             
-            // Set a fixed width for PDF generation
+            // Set options for html2canvas
             const opt = {
                 scale: 2,
                 logging: false,
                 useCORS: true,
                 allowTaint: true,
-                width: 800,
-                windowWidth: 800
+                letterRendering: true,
+                width: element.offsetWidth,
+                windowWidth: element.scrollWidth,
+                height: element.scrollHeight
             };
             
-            html2canvas(element, opt).then(canvas => {
+            // Create a promise to ensure all fonts are loaded
+            const fontLoadPromise = document.fonts ? document.fonts.ready : Promise.resolve();
+            
+            fontLoadPromise.then(() => {
+                return html2canvas(element, opt);
+            }).then(canvas => {
                 // Show buttons again
                 buttons.forEach(btn => btn.style.display = '');
                 
                 const imgData = canvas.toDataURL('image/png');
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                const imgWidth = 210; // A4 width in mm
-                const imgHeight = canvas.height * imgWidth / canvas.width;
+                const pdf = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a4'
+                });
                 
+                // Calculate image dimensions to fit A4
+                const imgWidth = 210; // A4 width in mm
+                const pageHeight = 297; // A4 height in mm
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                
+                // Add first page
                 pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
                 
-                const invoiceNumber = document.getElementById('invoice-number').value || 'invoice';
+                const invoiceNumber = document.getElementById('display-invoice-number').textContent || 'invoice';
                 pdf.save(`${invoiceNumber}.pdf`);
+            }).catch(error => {
+                console.error('Error generating PDF:', error);
+                buttons.forEach(btn => btn.style.display = '');
             });
         });
     </script>
