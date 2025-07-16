@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+        body {
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.5;
+        }
+        .container {
+            width: 800px;
+            margin: 0 auto;
+        }
+        .invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .invoice-table th, .invoice-table td {
+            padding: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .text-nowrap {
+            white-space: nowrap;
+        }
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                padding: 0;
+                margin: 0;
+                background: white;
+                font-size: 12px;
+            }
+            .container {
+                box-shadow: none;
+                border: none;
+                margin: 0;
+                padding: 10px;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="container bg-white shadow-md rounded-lg my-4 p-6" id="invoice-container">
+        <!-- Header Section -->
+        <div class="header border-b-2 border-blue-600 pb-4 mb-4">
+            <div class="flex justify-center mb-2">
+
+            <img src="logo.png" alt="TECHNOVAHUB Logo" class="h-24"></div>
+
+            <h1 class="text-2xl font-bold text-blue-600 text-center">INVOICE</h1>
+            <div class="mt-4 grid grid-cols-2 gap-4 text-sm">
+                <div class="text-left">
+                    <p class="text-gray-600">No.48, First Floor,</p>
+                    <p class="text-gray-600">Lawspet Main Road, Puducherry - 605008</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-gray-600">Phone: 9360962810 | Email: technovahubcareer@gmail.com</p>
+                    <p class="text-gray-600">GSTIN: 34ADXPA0879K1Z3 | State: 34-Puducherry</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Invoice Info - Compact Layout -->
+        <div class="flex justify-between items-start mb-6">
+            <div class="w-1/2">
+                <h3 class="text-lg font-semibold text-blue-600 mb-1">Invoice To</h3>
+                <div class="w-full border-b border-gray-300 px-2 py-1 mb-2" id="client-name-display">Aroun Systems and Safety Equipments</div>
+                
+                <div class="mt-4">
+                    <h4 class="font-semibold text-gray-700 mb-1">GSTIN</h4>
+                    <div class="w-full border-b border-gray-300 px-2 py-1" id="client-gst-display">34ADXPA0879K1Z3</div>
+                </div>
+                
+                <div class="mt-4">
+                    <h4 class="font-semibold text-gray-700 mb-1">Address</h4>
+                    <div class="w-full border-b border-gray-300 px-2 py-1 min-h-[4rem]" id="client-address-display">38.39 2ND CROSS STREET GREEN GARDEN</div>
+                </div>
+            </div>
+            
+            <div class="w-1/2 pl-4">
+                <table class="invoice-table">
+                    <tr>
+                        <td class="font-semibold">Invoice #</td>
+                        <td><div class="w-full text-right" id="invoice-number-display">INV-001</div></td>
+                    </tr>
+                    <tr>
+                        <td class="font-semibold">Date</td>
+                        <td><div class="w-full text-right" id="invoice-date-display">2025-07-16</div></td>
+                    </tr>
+                    <tr>
+                        <td class="font-semibold">Due Date</td>
+                        <td><div class="w-full text-right" id="due-date-display">2025-07-31</div></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Items Table -->
+        <div class="overflow-x-auto">
+            <table class="invoice-table" id="items-table">
+                <thead>
+                    <tr class="bg-blue-600 text-white">
+                        <th class="text-left">Item Description</th>
+                        <th class="text-left">HSN/SAC</th>
+                        <th class="text-center">Qty</th>
+                        <th class="text-right">Price/Unit</th>
+                        <th class="text-right">Discount</th>
+                        <th class="text-right">Amount</th>
+                        <th class="no-print">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Rows will be added here -->
+                </tbody>
+            </table>
+        </div>
+
+        <button id="add-row" class="mt-2 bg-blue-600 text-white px-4 py-2 rounded no-print">Add Item</button>
+
+        <!-- Totals Section -->
+        <div class="totals-section mt-6 flex justify-end">
+            <div class="w-64">
+                <div class="flex justify-between py-2 border-b">
+                    <span class="font-semibold">Sub Total</span>
+                    <span id="sub-total" class="text-nowrap">₹0.00</span>
+                </div>
+                <div class="flex justify-between py-2 border-b">
+                    <span class="font-semibold">Discount</span>
+                    <span id="total-discount" class="text-nowrap">₹0.00</span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-blue-600">
+                    <span class="font-semibold text-blue-600">Total</span>
+                    <span id="total" class="font-semibold text-blue-600 text-nowrap">₹0.00</span>
+                </div>
+                <div class="mt-2 text-right text-sm text-blue-600">
+                    <span id="amount-in-words">Zero Rupees Only</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Terms and Conditions -->
+        <div class="terms mt-4 pt-3 border-t-2 border-blue-600">
+            <h4 class="text-md font-semibold text-blue-600 mb-1">Terms and Conditions</h4>
+            <p class="text-gray-700 text-sm">1. This is a computer generated invoice.</p>
+            <p class="text-gray-700 text-sm">2. Please pay within 15 days from the invoice date.</p>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer mt-6 pt-4 border-t-2 border-blue-600">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <h3 class="text-md font-semibold text-blue-600 mb-1">Bank Details</h3>
+                    <p class="text-gray-600 text-sm">Bank Name: HDFC BANK, VENKATA NAGAR, PONDICHERRY</p>
+                    <p class="text-gray-600 text-sm">Account No.: 50100297512837</p>
+                    <p class="text-gray-600 text-sm">IFSC Code: HDFC0001278</p>
+                    <p class="text-gray-600 text-sm">Account Name: VIDHYAVATHI</p>
+                </div>
+                <div class="text-right">
+                    <h3 class="text-md font-semibold text-blue-600 mb-1">For TECHNOVAHUB</h3>
+                    <div class="mt-6">
+                        <p class="text-gray-600 text-sm">Authorized Signatory</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Download Button -->
+        <div class="mt-6 text-center no-print">
+            <button id="generate-pdf" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow text-sm">
+                Download as PDF
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Initialize jsPDF
+        const { jsPDF } = window.jspdf;
+
+        // Set today's date as default for invoice and due date (due date +15 days)
+        const today = new Date();
+        const formattedDate = today.toISOString().split('T')[0];
+        document.getElementById('invoice-date-display').textContent = formattedDate;
+        
+        const dueDate = new Date();
+        dueDate.setDate(today.getDate() + 15);
+        const formattedDueDate = dueDate.toISOString().split('T')[0];
+        document.getElementById('due-date-display').textContent = formattedDueDate;
+
+        // Sample data
+        const sampleItems = [
+            { description: "Server (Per Year)", hsn: "", qty: 1, price: 3500, discount: 0, amount: 3500 },
+            { description: "SSL Certificate", hsn: "", qty: 1, price: 750, discount: 0, amount: 750 },
+            { description: "Responsive Design", hsn: "", qty: 1, price: 20000, discount: 8000, amount: 12000 },
+            { description: "Cross-Device Compatibility", hsn: "", qty: 1, price: 15000, discount: 6000, amount: 9000 },
+            { description: "Admin Panel Development", hsn: "", qty: 1, price: 1000, discount: 0, amount: 1000 }
+        ];
+
+        // Add sample data on load
+        document.addEventListener('DOMContentLoaded', function() {
+            sampleItems.forEach(item => {
+                addRow(item);
+            });
+            calculateTotals();
+        });
+
+        // Add new row
+        document.getElementById('add-row').addEventListener('click', function() {
+            addRow();
+        });
+
+        function addRow(data = null) {
+            const tbody = document.querySelector('#items-table tbody');
+            const tr = document.createElement('tr');
+            tr.className = 'border-b hover:bg-gray-50';
+            
+            tr.innerHTML = `
+                <td class="p-2"><div class="item-desc">${data ? data.description : ''}</div></td>
+                <td class="p-2"><div class="item-hsn">${data ? data.hsn : ''}</div></td>
+                <td class="p-2 text-center"><div class="item-qty">${data ? data.qty : 1}</div></td>
+                <td class="p-2 text-right"><div class="item-price">${data ? data.price.toFixed(2) : '0.00'}</div></td>
+                <td class="p-2 text-right"><div class="item-discount">${data ? data.discount.toFixed(2) : '0.00'}</div></td>
+                <td class="p-2 text-right item-amount">₹${data ? data.amount.toFixed(2) : '0.00'}</td>
+                <td class="p-2 text-center no-print"><button class="text-red-500 delete-row">×</button></td>
+            `;
+            
+            tbody.appendChild(tr);
+            
+            tr.querySelector('.delete-row').addEventListener('click', function() {
+                tr.remove();
+                calculateTotals();
+            });
+        }
+
+        // Calculate all totals
+        function calculateTotals() {
+            const rows = document.querySelectorAll('#items-table tbody tr');
+            let subTotal = 0;
+            let totalDiscount = 0;
+            let total = 0;
+            
+            rows.forEach(row => {
+                const qty = parseFloat(row.querySelector('.item-qty').textContent) || 0;
+                const price = parseFloat(row.querySelector('.item-price').textContent) || 0;
+                const discount = parseFloat(row.querySelector('.item-discount').textContent) || 0;
+                
+                const rowSubtotal = qty * price;
+                const rowTotal = rowSubtotal - discount;
+                
+                subTotal += rowSubtotal;
+                totalDiscount += discount;
+                total += rowTotal;
+            });
+            
+            document.getElementById('sub-total').textContent = '₹' + subTotal.toFixed(2);
+            document.getElementById('total-discount').textContent = '₹' + totalDiscount.toFixed(2);
+            document.getElementById('total').textContent = '₹' + total.toFixed(2);
+            
+            document.getElementById('amount-in-words').textContent = numberToWords(total) + ' Rupees Only';
+        }
+
+        // Number to words conversion
+        function numberToWords(num) {
+            const units = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+            const teens = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+            const tens = ['', 'Ten', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+            
+            num = Math.floor(num);
+            if (num === 0) return 'Zero';
+            
+            let words = '';
+            
+            if (num >= 10000000) {
+                words += numberToWords(Math.floor(num / 10000000)) + ' Crore ';
+                num %= 10000000;
+            }
+            
+            if (num >= 100000) {
+                words += numberToWords(Math.floor(num / 100000)) + ' Lakh ';
+                num %= 100000;
+            }
+            
+            if (num >= 1000) {
+                words += numberToWords(Math.floor(num / 1000)) + ' Thousand ';
+                num %= 1000;
+            }
+            
+            if (num >= 100) {
+                words += numberToWords(Math.floor(num / 100)) + ' Hundred ';
+                num %= 100;
+            }
+            
+            if (num > 0) {
+                if (words !== '') words += 'and ';
+                
+                if (num < 10) {
+                    words += units[num];
+                } else if (num < 20) {
+                    words += teens[num - 10];
+                } else {
+                    words += tens[Math.floor(num / 10)];
+                    if (num % 10 !== 0) {
+                        words += ' ' + units[num % 10];
+                    }
+                }
+            }
+            
+            return words.trim();
+        }
+
+        // Generate PDF with fixed content overriding issue
+        document.getElementById('generate-pdf').addEventListener('click', function() {
+            const element = document.getElementById('invoice-container');
+            const buttons = document.querySelectorAll('.no-print');
+            
+            // Hide buttons before capturing
+            buttons.forEach(btn => btn.style.display = 'none');
+            
+            // Set options for html2canvas
+            const opt = {
+                scale: 2,
+                logging: false,
+                useCORS: true,
+                allowTaint: true,
+                letterRendering: true,
+                width: element.offsetWidth,
+                windowWidth: element.scrollWidth,
+                height: element.scrollHeight
+            };
+            
+            // Create a promise to ensure all fonts are loaded
+            const fontLoadPromise = document.fonts ? document.fonts.ready : Promise.resolve();
+            
+            fontLoadPromise.then(() => {
+                return html2canvas(element, opt);
+            }).then(canvas => {
+                // Show buttons again
+                buttons.forEach(btn => btn.style.display = '');
+                
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+                
+                // Calculate image dimensions to fit A4
+                const imgWidth = 210; // A4 width in mm
+                const pageHeight = 297; // A4 height in mm
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                
+                // Add first page
+                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+                
+                const invoiceNumber = document.getElementById('invoice-number-display').textContent || 'invoice';
+                pdf.save(`${invoiceNumber}.pdf`);
+            }).catch(error => {
+                console.error('Error generating PDF:', error);
+                buttons.forEach(btn => btn.style.display = '');
+            });
+        });
+    </script>
+</body>
+</html>
